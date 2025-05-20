@@ -1,6 +1,8 @@
 using System.Text.Json;
 using AutoMapper;
+using CommandsService.Data;
 using CommandsService.Dtos;
+using CommandsService.Models;
 
 namespace CommandsService.EventProcessing
 {
@@ -17,7 +19,16 @@ namespace CommandsService.EventProcessing
 
     public void ProcessEvent(string message)
     {
-      throw new NotImplementedException();
+      var eventType = DetermineEvent(message);
+
+      switch (eventType)
+      {
+        case EventType.PlatformPublished:
+          //to do
+          break;
+        default:
+          break;
+      }
     }
 
     private EventType DetermineEvent(string notificationMessage)
@@ -34,6 +45,34 @@ namespace CommandsService.EventProcessing
         default:
           Console.WriteLine("--> Could not determine the event type");
           return EventType.Undetermined;
+      }
+    }
+
+    private void AddPlatform(string platformPublishedMessage)
+    {
+      using (var scope = _scopeFactory.CreateScope())
+      {
+        var repo = scope.ServiceProvider.GetRequiredService<ICommandRepo>();
+
+        var platformPublishedDto = JsonSerializer.Deserialize<PlatformPublishedDto>(platformPublishedMessage);
+
+        try
+        {
+          var plat = _mapper.Map<Platform>(platformPublishedDto);
+          if (!repo.ExternalPlatformExists(plat.ExternalId))
+          {
+            repo.CreatePlatform(plat);
+            repo.SaveChanges();
+          }
+          else
+          {
+            Console.WriteLine("--> Platform already exists...");
+          }
+        }
+        catch (Exception ex)
+        {
+          Console.WriteLine($"--> Could not add Platform to DB {ex.Message}");
+        }
       }
     }
   }
