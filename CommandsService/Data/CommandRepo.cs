@@ -49,7 +49,7 @@ namespace CommandsService.Data
 
     public IEnumerable<Command> GetCommandsForPlatform(int platformId)
     {
-      return _context.Commands.Where(c => c.PlatformId == platformId).OrderBy(c => c.Platform.Name);
+      return _context.Commands.Where(c => c.PlatformId == platformId);
     }
 
     public bool PlatformExists(int platformId)
