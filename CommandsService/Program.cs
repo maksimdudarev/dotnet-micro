@@ -52,6 +52,7 @@ app.MapGet("/weatherforecast", () =>
 .WithOpenApi();
 
 app.MapControllers();
+PrepDb.PrepPopulation(app);
 
 app.Run();
 
